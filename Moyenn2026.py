@@ -2,6 +2,18 @@ import streamlit as st
 from fpdf import FPDF
 import pandas as pd
 
+# ===== تعرف الوضع الحالي =====
+theme_base = st.get_option("theme.base")  # "light" أو "dark"
+
+if theme_base == "dark":
+    title_color = "#90cdf4"  # أزرق فاتح
+    subtitle_color = "#cbd5e0"  # رمادي فاتح
+    card_bg = "#1e293b"  # كارد غامق
+else:
+    title_color = "#1f4ed8"  # أزرق داكن
+    subtitle_color = "gray"
+    card_bg = "#f5f7ff"  # كارد فاتح
+
 # ===== المواد =====
 modules = [
     ("Couches minces", 2, "TD"),
@@ -19,11 +31,18 @@ modules = [
 # ===== إعداد الصفحة =====
 st.set_page_config(page_title="Moyenne M1 - Yacine", page_icon="🎓", layout="wide")
 
-st.markdown("""
+# ===== CSS ديناميكي =====
+st.markdown(f"""
 <style>
-.big-title {font-size:40px; font-weight:bold; color:#1f4ed8;}
-.subtitle {font-size:18px; color:gray;}
-.card {padding:15px; border-radius:15px; background-color:#f5f7ff; margin-bottom:10px;}
+.big-title {{
+    font-size:40px; font-weight:bold; color:{title_color};
+}}
+.subtitle {{
+    font-size:18px; color:{subtitle_color};
+}}
+.card {{
+    padding:15px; border-radius:15px; background-color:{card_bg}; margin-bottom:10px;
+}}
 </style>
 """, unsafe_allow_html=True)
 
