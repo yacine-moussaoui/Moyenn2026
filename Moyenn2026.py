@@ -12,7 +12,7 @@ modules = [
     ("Outils de simulation", 1, "TP"),
     ("Physique des composants", 1, "TP"),
     ("Propriétés optiques", 1, "TP"),
-    ("Industrie de la Microélectronique", 1, "TD_ONLY")
+    ("Industrie de la Microélectronique", 1, "CONTROL_ONLY")
 ]
 
 st.set_page_config(page_title="Moyenne M1 - Yacine", page_icon="🎓", layout="wide")
@@ -33,7 +33,7 @@ notes = {}
 total = 0
 total_coef = 0
 
-st.subheader("✍️ إدخال النقاط")
+st.subheader("✍️ Saisie des notes")
 
 for module, coef, typ in modules:
     with st.container():
@@ -42,27 +42,27 @@ for module, coef, typ in modules:
 
         if typ == "TD":
             with col1:
-                td = st.number_input("TD", 0.0, 20.0, step=0.1, key=f"td_{module}_{coef}")
+                td = st.number_input("TD", 0.0, 20.0, step=0.1, key=f"td_{module}")
             with col2:
-                control = st.number_input("Contrôle", 0.0, 20.0, step=0.1, key=f"control_{module}_{coef}")
+                control = st.number_input("Contrôle", 0.0, 20.0, step=0.1, key=f"control_{module}")
             moyenne = td * 0.4 + control * 0.6
 
-        elif typ == "TD_ONLY":
-            td = st.number_input("TD", 0.0, 20.0, step=0.1, key=f"td_{module}_{coef}")
-            moyenne = td
+        elif typ == "CONTROL_ONLY":  # Industrie: contrôle فقط
+            control = st.number_input("Contrôle", 0.0, 20.0, step=0.1, key=f"control_{module}")
+            moyenne = control
 
         else:  # TP
-            tp = st.number_input("TP", 0.0, 20.0, step=0.1, key=f"tp_{module}_{coef}")
+            tp = st.number_input("TP", 0.0, 20.0, step=0.1, key=f"tp_{module}")
             moyenne = tp
 
-    notes[f"{module} ({coef})"] = moyenne
+    notes[module] = moyenne
     total += moyenne * coef
     total_coef += coef
 
-# ===== النتائج =====
+# ===== Résultats =====
 df = pd.DataFrame({
-    "Module": list(notes.keys()),
-    "Moyenne": [round(v, 2) for v in notes.values()]
+    "Module": [m[0] for m in modules],
+    "Moyenne": [round(notes[m[0]], 2) for m in modules]
 })
 
 def color_moyenne(val):
@@ -76,7 +76,7 @@ def color_moyenne(val):
 st.subheader("📋 Résultats")
 st.dataframe(df.style.applymap(color_moyenne, subset=["Moyenne"]), use_container_width=True)
 
-# ===== المعدل العام + الحالة =====
+# ===== Moyenne générale + Statut =====
 moyenne_generale = total / total_coef
 
 if moyenne_generale < 10:
