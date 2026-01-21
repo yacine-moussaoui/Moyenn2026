@@ -33,7 +33,7 @@ notes = {}
 total = 0
 total_coef = 0
 
-st.subheader("✍️ إدخال النقاط")
+st.subheader("✍️ Saisie des notes")
 
 for module, coef, typ in modules:
     with st.container():
@@ -136,3 +136,4 @@ if st.button("📄 Télécharger le relevé en PDF"):
     )
 
 st.caption("© 2026 - Application M1 Microélectronique | Yacine Moussaoui")
+
