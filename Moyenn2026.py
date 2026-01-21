@@ -6,13 +6,19 @@ import pandas as pd
 theme_base = st.get_option("theme.base")  # "light" أو "dark"
 
 if theme_base == "dark":
-    title_color = "#90cdf4"  # أزرق فاتح
-    subtitle_color = "#cbd5e0"  # رمادي فاتح
-    card_bg = "#1e293b"  # كارد غامق
+    title_color = "#90cdf4"       # أزرق فاتح
+    subtitle_color = "#e2e8f0"    # رمادي فاتح
+    card_bg = "#1e293b"           # كارد غامق
+    card_text_color = "#f8fafc"   # كتابة فاتحة داخل الكارد
+    table_bg = "#334155"           # خلفية جدول
+    table_text = "#f8fafc"         # نص الجدول فاتح
 else:
-    title_color = "#1f4ed8"  # أزرق داكن
+    title_color = "#1f4ed8"       # أزرق داكن
     subtitle_color = "gray"
-    card_bg = "#f5f7ff"  # كارد فاتح
+    card_bg = "#f5f7ff"           # كارد فاتح
+    card_text_color = "#1f2937"   # كتابة داكنة داخل الكارد
+    table_bg = "#ffffff"           # خلفية جدول فاتحة
+    table_text = "#1f2937"        # نص الجدول غامق
 
 # ===== المواد =====
 modules = [
@@ -41,7 +47,8 @@ st.markdown(f"""
     font-size:18px; color:{subtitle_color};
 }}
 .card {{
-    padding:15px; border-radius:15px; background-color:{card_bg}; margin-bottom:10px;
+    padding:15px; border-radius:15px; background-color:{card_bg}; color:{card_text_color};
+    margin-bottom:10px;
 }}
 </style>
 """, unsafe_allow_html=True)
@@ -100,7 +107,12 @@ def color_moyenne(val):
     else:
         return 'color: green; font-weight: bold'
 
-st.dataframe(df.style.applymap(color_moyenne, subset=["Moyenne"]), use_container_width=True)
+st.dataframe(
+    df.style.applymap(color_moyenne, subset=["Moyenne"])
+           .set_table_styles([{'selector': 'thead', 'props': [('color', table_text)]}])
+           .set_properties(**{'background-color': table_bg, 'color': table_text}),
+    use_container_width=True
+)
 
 # ===== المعدل العام =====
 moyenne_generale = total / total_coef
