@@ -17,7 +17,7 @@ modules = [
     ("Industrie de la Microelectronique", 1, "CONTROL_ONLY")
 ]
 
-# ===== إعداد الصفحة =====
+# ===== Page Setup =====
 st.set_page_config(page_title="Moyenne M1 - Yacine", page_icon="🎓", layout="wide")
 
 st.markdown("""
@@ -30,14 +30,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="big-title">📊 Calcul Moyenne M1 Microelectronique</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Semestre 1 – Developpe par Yacine Moussaoui</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Semestre 1 - Developpe par Yacine Moussaoui</div>', unsafe_allow_html=True)
 st.divider()
 
-# ===== إدخال النقاط =====
+# ===== Inputs =====
 notes = {}
-total = 0
-total_coef = 0
-
 st.subheader("✍️ Saisie des notes")
 
 for module, coef, typ in modules:
@@ -45,31 +42,29 @@ for module, coef, typ in modules:
     col1, col2 = st.columns(2)
 
     if typ == "TD":
-        with col1:
-            td = st.number_input(f"TD {module}", 0.0, 20.0, step=0.1, key=f"td_{module}")
-        with col2:
-            control = st.number_input(f"Controle {module}", 0.0, 20.0, step=0.1, key=f"control_{module}")
+        td = st.number_input(f"TD {module}", 0.0, 20.0, step=0.1, key=f"td_{module}")
+        control = st.number_input(f"Controle {module}", 0.0, 20.0, step=0.1, key=f"control_{module}")
         moyenne = td * 0.4 + control * 0.6
-
     elif typ == "CONTROL_ONLY":
         control = st.number_input(f"Controle {module}", 0.0, 20.0, step=0.1, key=f"control_{module}")
         moyenne = control
-
     else:  # TP
         tp = st.number_input(f"TP {module}", 0.0, 20.0, step=0.1, key=f"tp_{module}")
         moyenne = tp
 
     notes[module] = moyenne
-    total += moyenne * coef
-    total_coef += coef
 
-# ===== Résultats =====
+# ===== Calcul de la moyenne =====
+total = sum(m * c for (m_name, c, t), m in zip(modules, notes.values()))
+total_coef = sum(c for (_, c, _) in modules)
+moyenne_generale = total / total_coef if total_coef > 0 else 0
+
+# ===== DataFrame =====
 df = pd.DataFrame({
     "Module": list(notes.keys()),
     "Moyenne": [round(v,2) for v in notes.values()]
 })
 
-# ===== تحديد Mention لكل مادة =====
 def get_mention(val):
     if val < 10:
         return "Echec"
@@ -86,7 +81,6 @@ def get_mention(val):
 
 df["Mention"] = df["Moyenne"].apply(get_mention)
 
-# ===== تلوين العمود "Mention" فقط =====
 def color_mention(val):
     if val == "Echec":
         return 'background-color: #f8d7da; color:black'
@@ -98,14 +92,13 @@ def color_mention(val):
         return 'background-color: #99ccff; color:black'
     elif val == "Tres Bien":
         return 'background-color: #d4edda; color:black'
-    else:  # Excellent
+    else:
         return 'background-color: #ffe58a; color:black'
 
-st.subheader("📋 Résultats")
+st.subheader("📋 Resultats")
 st.dataframe(df.style.applymap(color_mention, subset=["Mention"]), use_container_width=True)
 
-# ===== Moyenne générale + Statut =====
-moyenne_generale = total / total_coef
+# ===== Statut =====
 if moyenne_generale < 10:
     statut = "❌ Ajourne"
     mention_gen = "Echec"
@@ -131,7 +124,7 @@ st.success(f"Statut : {statut}")
 st.info(f"Mention : {mention_gen}")
 st.progress(int((moyenne_generale / 20) * 100))
 
-# ===== PDF بدون Unicode =====
+# ===== PDF sans Unicode =====
 if st.button("📄 Telecharger le releve en PDF"):
     pdf = FPDF()
     pdf.add_page()
@@ -141,8 +134,11 @@ if st.button("📄 Telecharger le releve en PDF"):
     pdf.cell(0, 8, "Developpe par Yacine Moussaoui", ln=True, align="C")
     pdf.ln(10)
 
+    # Ecrire les modules
     for module, moyenne, mention_mod in zip(df["Module"], df["Moyenne"], df["Mention"]):
-        pdf.cell(0, 8, f"{module} : {moyenne:.2f} ({mention_mod})", ln=True)
+        # Remplacer les caracteres accentues
+        module_safe = module.replace("é","e").replace("è","e").replace("ç","c").replace("à","a")
+        pdf.cell(0, 8, f"{module_safe} : {moyenne:.2f} ({mention_mod})", ln=True)
 
     pdf.ln(5)
     pdf.set_font("Arial", "B", 12)
@@ -150,9 +146,8 @@ if st.button("📄 Telecharger le releve en PDF"):
     pdf.cell(0, 8, f"Statut : {statut}", ln=True)
     pdf.cell(0, 8, f"Mention : {mention_gen}", ln=True)
 
-    pdf_buffer = BytesIO()
-    pdf.output(pdf_buffer)
-    pdf_buffer.seek(0)
+    pdf_bytes = pdf.output(dest='S').encode('latin-1')
+    pdf_buffer = BytesIO(pdf_bytes)
 
     st.download_button(
         "⬇️ Telecharger le PDF",
@@ -162,4 +157,3 @@ if st.button("📄 Telecharger le releve en PDF"):
     )
 
 st.caption("© 2026 - Application M1 Microelectronique | Yacine Moussaoui")
-
