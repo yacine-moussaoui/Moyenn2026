@@ -1,9 +1,7 @@
 import streamlit as st
 from fpdf import FPDF
 import pandas as pd
-from io import BytesIO
 
-# ===== تعريف المواد =====
 modules = [
     ("Couches minces", 2, "TD"),
     ("Physique des composants", 3, "TD"),
@@ -11,78 +9,112 @@ modules = [
     ("Procédés d'élaboration", 2, "TD"),
     ("Conception et Modélisation", 2, "TD"),
     ("Programmation avancée", 2, "TD"),
-    ("TP Outils de simulation", 1, "TP"),
-    ("TP Physique des composants", 1, "TP"),
-    ("TP Propriétés optiques", 1, "TP"),
-    ("Industrie de la Microélectronique", 1, "TD")
+    ("Outils de simulation (TP)", 1, "TP"),
+    ("Physique des composants (TP)", 1, "TP"),
+    ("Propriétés optiques (TP)", 1, "TP"),
+    ("Industrie de la Microélectronique", 1, "TD_ONLY")
 ]
 
-# ===== إعداد الصفحة =====
-st.set_page_config(page_title="Calcul Moyenne M1 - YACINE MOUSSAOUI", layout="wide")
-st.title("📊 Calcul Moyenne M1 Microélectronique - Semestre 1")
-st.caption("Développé par YACINE MOUSSAOUI")  # يظهر اسمك أسفل العنوان
+st.set_page_config(page_title="Moyenne M1 - Yacine", page_icon="🎓", layout="wide")
+
+st.markdown("""
+<style>
+.big-title {font-size:40px; font-weight:bold; color:#1f4ed8;}
+.subtitle {font-size:18px; color:gray;}
+.card {padding:15px; border-radius:15px; background-color:#f5f7ff; margin-bottom:10px;}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown('<div class="big-title">📊 Calcul Moyenne M1 Microélectronique</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Semestre 1 – Développé par Yacine Moussaoui</div>', unsafe_allow_html=True)
+st.divider()
 
 notes = {}
 total = 0
 total_coef = 0
 
-st.subheader("Entrez vos notes:")
+st.subheader("✍️ إدخال النقاط")
 
-# ===== إدخال الدرجات =====
 for module, coef, typ in modules:
-    col1, col2 = st.columns([2, 3])
-    with col1:
-        st.markdown(f"**{module} (Coef {coef})**")
-    with col2:
+    with st.container():
+        st.markdown(f"<div class='card'><b>{module}</b> (Coef {coef})</div>", unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
+
         if typ == "TD":
-            td = st.number_input(f"TD {module}", 0.0, 20.0, step=0.1, key=f"td_{module}")
-            control = st.number_input(f"Contrôle {module}", 0.0, 20.0, step=0.1, key=f"control_{module}")
-            moyenne = td * 0.6 + control * 0.4
+            with col1:
+                td = st.number_input("TD", 0.0, 20.0, step=0.1, key=f"td_{module}")
+            with col2:
+                control = st.number_input("Contrôle", 0.0, 20.0, step=0.1, key=f"control_{module}")
+            moyenne = td * 0.4 + control * 0.6
+
+        elif typ == "TD_ONLY":
+            td = st.number_input("TD", 0.0, 20.0, step=0.1, key=f"td_{module}")
+            moyenne = td
+
         else:
-            tp = st.number_input(f"TP {module}", 0.0, 20.0, step=0.1, key=f"tp_{module}")
+            tp = st.number_input("TP", 0.0, 20.0, step=0.1, key=f"tp_{module}")
             moyenne = tp
 
     notes[module] = moyenne
     total += moyenne * coef
     total_coef += coef
 
-# ===== جدول النتائج =====
-st.subheader("Résultats par Module:")
-
+# ===== النتائج =====
 df = pd.DataFrame({
     "Module": [m[0] for m in modules],
-    "Type": [m[2] for m in modules],
-    "Moyenne": [notes[m[0]] for m in modules]
+    "Moyenne": [round(notes[m[0]], 2) for m in modules]
 })
 
 def color_moyenne(val):
     if val < 10:
-        return 'color: red'
+        return 'color: red; font-weight: bold'
     elif val < 14:
-        return 'color: orange'
+        return 'color: orange; font-weight: bold'
     else:
-        return 'color: green'
+        return 'color: green; font-weight: bold'
 
-st.dataframe(df.style.applymap(color_moyenne, subset=["Moyenne"]))
+st.subheader("📋 Résultats")
+st.dataframe(df.style.applymap(color_moyenne, subset=["Moyenne"]), use_container_width=True)
 
-# ===== المعدل العام =====
-if total_coef > 0:
-    moyenne_generale = total / total_coef
-    st.subheader(f"⭐ Moyenne Générale = {moyenne_generale:.2f}")
-    st.progress(int((moyenne_generale / 20) * 100))
+# ===== المعدل العام + الحالة =====
+moyenne_generale = total / total_coef
+
+if moyenne_generale < 10:
+    statut = "❌ Ajourné"
+    mention = "Échec"
+elif moyenne_generale < 12:
+    statut = "✅ Admis"
+    mention = "Passable"
+elif moyenne_generale < 14:
+    statut = "✅ Admis"
+    mention = "Assez Bien"
+elif moyenne_generale < 16:
+    statut = "✅ Admis"
+    mention = "Bien"
+elif moyenne_generale < 18:
+    statut = "✅ Admis"
+    mention = "Très Bien"
+else:
+    statut = "🏆 Admis"
+    mention = "Excellent"
+
+st.subheader("🏆 Résultat Final")
+st.metric("Moyenne Générale", f"{moyenne_generale:.2f} / 20")
+st.success(f"Statut : {statut}")
+st.info(f"Mention : {mention}")
+st.progress(int((moyenne_generale / 20) * 100))
 
 # ===== PDF =====
-if st.button("📄 Télécharger PDF"):
+if st.button("📄 Télécharger le relevé en PDF"):
     pdf = FPDF()
     pdf.add_page()
-    
-    # العنوان واسمك في PDF
-    pdf.set_font("Arial", "B", 14)
+
+    pdf.set_font("Arial", "B", 16)
     pdf.cell(0, 10, "Moyenne M1 Microélectronique - S1", ln=True, align="C")
     pdf.ln(5)
     pdf.set_font("Arial", "I", 10)
-    pdf.cell(0, 5, "Développé par YACINE MOUSSAOUI", ln=True, align="C")
-    pdf.ln(5)
+    pdf.cell(0, 5, "Développé par Yacine Moussaoui", ln=True, align="C")
+    pdf.ln(10)
 
     pdf.set_font("Arial", "", 11)
     for module, moyenne in notes.items():
@@ -91,12 +123,18 @@ if st.button("📄 Télécharger PDF"):
     pdf.ln(5)
     pdf.set_font("Arial", "B", 12)
     pdf.cell(0, 10, f"Moyenne Générale : {moyenne_generale:.2f}", ln=True)
+    pdf.cell(0, 8, f"Statut : {statut}", ln=True)
+    pdf.cell(0, 8, f"Mention : {mention}", ln=True)
 
     pdf_bytes = pdf.output(dest="S").encode("latin1")
 
     st.download_button(
-        "📥 Télécharger le PDF",
+        "⬇️ Télécharger le PDF",
         data=pdf_bytes,
-        file_name="Moyenne_M1.pdf",
+        file_name="Releve_M1_Yacine.pdf",
         mime="application/pdf"
     )
+
+st.caption("© 2026 - Application M1 Microélectronique | Yacine Moussaoui")
+
+
