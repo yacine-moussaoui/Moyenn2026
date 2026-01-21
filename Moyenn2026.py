@@ -20,11 +20,13 @@ modules = [
 # ===== إعداد الصفحة =====
 st.set_page_config(page_title="Moyenne M1 - Yacine", page_icon="🎓", layout="wide")
 
+# ===== تصميم متوافق Dark Mode =====
 st.markdown("""
 <style>
 .big-title {font-size:36px; font-weight:bold; color:#1f4ed8; text-align:center;}
 .subtitle {font-size:16px; color:gray; text-align:center;}
-.card {padding:15px; border-radius:15px; background-color:#f5f7ff; margin-bottom:10px;}
+.card {padding:15px; border-radius:15px; margin-bottom:10px; background-color:rgba(245,247,255,0.2);}
+.stButton>button {background-color:#1f4ed8; color:white;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -85,23 +87,23 @@ def get_mention(val):
 
 df["Mention"] = df["Moyenne"].apply(get_mention)
 
-# ===== تلوين الصفوف حسب Mention =====
-def row_color(val):
+# ===== تلوين العمود "Mention" فقط =====
+def color_mention(val):
     if val == "Échec":
-        return ['background-color: #f8d7da']*3  # أحمر فاتح
+        return 'background-color: #f8d7da; color:black'
     elif val == "Passable":
-        return ['background-color: #fff3cd']*3  # برتقالي فاتح
+        return 'background-color: #fff3cd; color:black'
     elif val == "Assez Bien":
-        return ['background-color: #cce5ff']*3  # أزرق فاتح
+        return 'background-color: #cce5ff; color:black'
     elif val == "Bien":
-        return ['background-color: #99ccff']*3  # أزرق متوسط
+        return 'background-color: #99ccff; color:black'
     elif val == "Très Bien":
-        return ['background-color: #d4edda']*3  # أخضر فاتح
-    else:
-        return ['background-color: #ffe58a']*3  # ذهبي
+        return 'background-color: #d4edda; color:black'
+    else:  # Excellent
+        return 'background-color: #ffe58a; color:black'
 
 st.subheader("📋 Résultats")
-st.dataframe(df.style.apply(row_color, subset=["Mention"], axis=1), use_container_width=True)
+st.dataframe(df.style.applymap(color_mention, subset=["Mention"]), use_container_width=True)
 
 # ===== Moyenne générale + Statut =====
 moyenne_generale = total / total_coef
