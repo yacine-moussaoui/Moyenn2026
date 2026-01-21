@@ -9,9 +9,9 @@ modules = [
     ("Procédés d'élaboration", 2, "TD"),
     ("Conception et Modélisation", 2, "TD"),
     ("Programmation avancée", 2, "TD"),
-    ("Outils de simulation", 1, "TP"),
-    ("Physique des composants", 1, "TP"),
-    ("Propriétés optiques", 1, "TP"),
+    ("Outils de simulation (TP)", 1, "TP"),
+    ("Physique des composants (TP)", 1, "TP"),
+    ("Propriétés optiques (TP)", 1, "TP"),
     ("Industrie de la Microélectronique", 1, "TD_ONLY")
 ]
 
@@ -42,27 +42,27 @@ for module, coef, typ in modules:
 
         if typ == "TD":
             with col1:
-                td = st.number_input("TD", 0.0, 20.0, step=0.1, key=f"td_{module}_{coef}")
+                td = st.number_input("TD", 0.0, 20.0, step=0.1, key=f"td_{module}")
             with col2:
-                control = st.number_input("Contrôle", 0.0, 20.0, step=0.1, key=f"control_{module}_{coef}")
+                control = st.number_input("Contrôle", 0.0, 20.0, step=0.1, key=f"control_{module}")
             moyenne = td * 0.4 + control * 0.6
 
         elif typ == "TD_ONLY":
-            td = st.number_input("TD", 0.0, 20.0, step=0.1, key=f"td_{module}_{coef}")
+            td = st.number_input("TD", 0.0, 20.0, step=0.1, key=f"td_{module}")
             moyenne = td
 
-        else:  # TP
-            tp = st.number_input("TP", 0.0, 20.0, step=0.1, key=f"tp_{module}_{coef}")
+        else:
+            tp = st.number_input("TP", 0.0, 20.0, step=0.1, key=f"tp_{module}")
             moyenne = tp
 
-    notes[f"{module} ({coef})"] = moyenne
+    notes[module] = moyenne
     total += moyenne * coef
     total_coef += coef
 
 # ===== النتائج =====
 df = pd.DataFrame({
-    "Module": list(notes.keys()),
-    "Moyenne": [round(v, 2) for v in notes.values()]
+    "Module": [m[0] for m in modules],
+    "Moyenne": [round(notes[m[0]], 2) for m in modules]
 })
 
 def color_moyenne(val):
