@@ -1,7 +1,9 @@
 import streamlit as st
 from fpdf import FPDF
 import pandas as pd
+from io import BytesIO
 
+# ===== تعريف المواد =====
 modules = [
     ("Couches minces", 2, "TD"),
     ("Physique des composants", 3, "TD"),
@@ -15,6 +17,7 @@ modules = [
     ("Industrie de la Microélectronique", 1, "CONTROL_ONLY")
 ]
 
+# ===== إعداد الصفحة =====
 st.set_page_config(page_title="Moyenne M1 - Yacine", page_icon="🎓", layout="wide")
 
 st.markdown("""
@@ -29,6 +32,7 @@ st.markdown('<div class="big-title">📊 Calcul Moyenne M1 Microélectronique</d
 st.markdown('<div class="subtitle">Semestre 1 – Développé par Yacine Moussaoui</div>', unsafe_allow_html=True)
 st.divider()
 
+# ===== إدخال النقاط =====
 notes = {}
 total = 0
 total_coef = 0
@@ -61,8 +65,8 @@ for module, coef, typ in modules:
 
 # ===== Résultats =====
 df = pd.DataFrame({
-    "Module": [m[0] for m in modules],
-    "Moyenne": [round(notes[m[0]], 2) for m in modules]
+    "Module": list(notes.keys()),
+    "Moyenne": [round(v, 2) for v in notes.values()]
 })
 
 def color_moyenne(val):
@@ -126,11 +130,14 @@ if st.button("📄 Télécharger le relevé en PDF"):
     pdf.cell(0, 8, f"Statut : {statut}", ln=True)
     pdf.cell(0, 8, f"Mention : {mention}", ln=True)
 
-    pdf_bytes = pdf.output(dest="S").encode("latin1")
+    # ✅ استخدام BytesIO لتحميل PDF
+    pdf_buffer = BytesIO()
+    pdf.output(pdf_buffer)
+    pdf_buffer.seek(0)
 
     st.download_button(
         "⬇️ Télécharger le PDF",
-        data=pdf_bytes,
+        data=pdf_buffer,
         file_name="Releve_M1_Yacine.pdf",
         mime="application/pdf"
     )
