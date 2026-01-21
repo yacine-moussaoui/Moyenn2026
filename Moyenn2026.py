@@ -61,7 +61,7 @@ notes = {}
 total = 0
 total_coef = 0
 
-# ===== إدخال النقاط =====
+# ===== إدخال النقاط وحساب المعدل =====
 st.subheader("✍️ إدخال النقاط")
 
 for module, coef, typ in modules:
@@ -69,18 +69,26 @@ for module, coef, typ in modules:
         st.markdown(f"<div class='card'><b>{module}</b> (Coef {coef})</div>", unsafe_allow_html=True)
         col1, col2 = st.columns(2)
 
-        if typ == "TD":
+        # المواد اللي فيها TP فقط
+        if module in ["TP Propriétés optiques", "TP Physique des composants", "TP Outils de simulation"]:
+            with col1:
+                tp = st.number_input(f"TP", 0.0, 20.0, step=0.1, key=f"tp_{module}")
+            moyenne = tp  # بدون كونطرول
+
+        elif typ == "TD":
             with col1:
                 td = st.number_input(f"TD", 0.0, 20.0, step=0.1, key=f"td_{module}")
             with col2:
                 control = st.number_input(f"Contrôle", 0.0, 20.0, step=0.1, key=f"control_{module}")
             moyenne = 0.4 * td + 0.6 * control
+
         elif typ == "TP":
             with col1:
                 tp = st.number_input(f"TP", 0.0, 20.0, step=0.1, key=f"tp_{module}")
             with col2:
                 control = st.number_input(f"Contrôle", 0.0, 20.0, step=0.1, key=f"control_{module}")
             moyenne = 0.4 * tp + 0.6 * control
+
         else:  # Contrôle only
             with col1:
                 control = st.number_input(f"Contrôle", 0.0, 20.0, step=0.1, key=f"control_{module}")
